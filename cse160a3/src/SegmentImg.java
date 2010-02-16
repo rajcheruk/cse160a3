@@ -182,7 +182,7 @@ public class SegmentImg extends JPanel {
 	                System.err.println("-p needs an int");
 	                Usage();
 	            }
-	            Segmentation.numThreads = numThreads;
+	            ParallelSegController.numThreads = numThreads;
 	            title = "Parallel Segmentation";
 	            // The output file will have the extension "_pm" added
 	            file_extension = "_pm."; // parallel segmentation
