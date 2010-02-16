@@ -4,7 +4,6 @@ import java.util.Random;
 
 public class Segmentation {
 
-    public static int numThreads = 1;
     public static int threshold = 4;
     public static int randomSeed = -1; // -1 = use time as seed
 
