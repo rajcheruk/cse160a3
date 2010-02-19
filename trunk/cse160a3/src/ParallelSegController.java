@@ -35,9 +35,9 @@ public class ParallelSegController {
     	pixelWidth = image.getSampleModel().getNumDataElements();
 
     	// Apply initial labels (each label is it's own index in the label array + 1)
-    	labels = new int[(width+32)*height];//padded, to avoid cache interference.
+    	labels = new int[(width)*height];//padded, to avoid cache interference.
     	
-    	for (int i = 0; i < (width+32)*height; i++) { 
+    	for (int i = 0; i < (width)*height; i++) { 
     		labels[i] = 0; 
     	}
 
@@ -45,7 +45,7 @@ public class ParallelSegController {
     	for (int i = 0; i < height; i++) {
     		for (int j = 0; j < width; j++) {
     		
-    			int idx = (i*(width+32) + j);
+    			int idx = (i*(width) + j);
     			int idx3 = idx*pixelWidth;
     			
     			// Comment this line if you want to label background pixels
@@ -72,7 +72,7 @@ public class ParallelSegController {
     		cur.start();
     		threads[curNumThreads] = cur;
     	}
-    	try {threads[curNumThreads].join();}
+    	try {threads[0].join();}
     	catch (InterruptedException e){
     		System.err.println("Segmentation not able to complete due to interruption.");
     		System.err.println(e.getStackTrace());
