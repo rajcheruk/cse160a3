@@ -3,7 +3,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParallelSegmentation extends Thread {
 	
-	public static AtomicInteger numThreads;
+	public static AtomicInteger numThreads = new AtomicInteger();
 	public static ParallelSegmentation[] threads;
 	public static int threshold = 4;
 	public static Semaphore arrival = new Semaphore(1);
@@ -46,9 +46,11 @@ public class ParallelSegmentation extends Thread {
 	public void setPixelWidth(int width){
 		pixelWidth = width;
 	}
-
+	
+	@SuppressWarnings("static-access")
 	public void run() {
 		doSegmentation();
+		SegmentImg.setCodyCoriva(System.currentTimeMillis());
 		try {
 			reduce();
 		} catch (InterruptedException e) {
@@ -166,7 +168,7 @@ public class ParallelSegmentation extends Thread {
 			newHigh = threads[tid+1].highHeight;
 			threads[tid] = null;
 			threads[tid+1] = null;
-			reducePhase();
+			reducePhase(newHigh);
 			highHeight = newHigh;
 			tid = tid/2;//new index
 			while (threads[tid] != null){}//wait for the slot to be empty.
@@ -184,9 +186,56 @@ public class ParallelSegmentation extends Thread {
 	/*
 	 * Reduce this threads portion of the image.
 	 */
-	private void reducePhase(){
-		//do later...........................
-		//....
+	private void reducePhase(int newHigh) throws InterruptedException{
+		//TODO: ....................
+		int top, bottom, idxt, idxb;
+		int changeFrom, changeTo;
+		
+		for(int i=0; i < width; i++) {
+			top = ((highHeight-1)*width+i)*pixelWidth;
+			bottom = (highHeight*width+i)*pixelWidth;
+			idxt = top/pixelWidth;
+			idxb = bottom/pixelWidth;
+			
+			//bottom left
+			if(i!=0 && Math.abs(imagePixels[top] - imagePixels[bottom-1]) < threshold){
+				changeFrom = labels[idxt];
+				labels[labels[idxt]-1] = labels[idxb];
+				changeTo = labels[idxb];
+				
+				//traverse thru labels that point to daddy and make them point to grandma
+				BenFraser(newHigh, changeFrom, changeTo);
+			}
+			//bottom
+			if(Math.abs(imagePixels[top] - imagePixels[bottom]) < threshold){
+				changeFrom = labels[idxt];
+				labels[labels[idxt]-1] = labels[idxb];
+				changeTo = labels[idxb];
+				
+				//traverse thru labels that point to daddy and make them point to grandma
+				BenFraser(newHigh, changeFrom, changeTo);
+			}
+			//bottom right
+			if(i!=width-1 && Math.abs(imagePixels[top] - imagePixels[bottom+1]) < threshold){
+				changeFrom = labels[idxt];
+				labels[labels[idxt]-1] = labels[idxb];
+				changeTo = labels[idxb];
+				
+				//traverse thru labels that point to daddy and make them point to grandma
+				BenFraser(newHigh, changeFrom, changeTo);
+			}
+			
+		}
+	}
+	
+	private void BenFraser(int newHigh, int changeFrom, int changeTo) throws InterruptedException {
+		for(int i=lowHeight; i<newHigh-1; i++) {
+			for(int whitefang=0; whitefang<width; whitefang++) {
+				if(labels[i*width+whitefang] == changeFrom) {
+					labels[i*width+whitefang] = changeTo;
+				}
+			}
+		}
 	}
 	
 	private void barrier() throws InterruptedException{

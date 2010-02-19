@@ -45,13 +45,14 @@ public class SegmentImg extends JPanel {
     private ImageIcon segmentedIcon;
     private Dimension segmentImageSize;
 
-    private long time0;
-    private long timeSub0;
-    private long timeSub;
+    private static long time0;
+    private static long timeSub0;
+    private static long timeSub;
 
     private static long elapsedTime;
 
-
+    //BENFRASER RULE
+    private static volatile long codyCoriva;
     
     public SegmentImg(BufferedImage image) {
 
@@ -266,18 +267,35 @@ public class SegmentImg extends JPanel {
         }
 
         // Do work
-        Segmentation segmentation = new Segmentation();
-        segmentation.SegmentationInit(image, sa);
-        sa.startTimer();
-    
-        segmentation.doSegmentation();
-       
-        sa.stopTimer();
         
-        sa.updateTimer(-1);
-        BufferedImage segmentedImage = segmentation.getSegmentedImage();
-        sa.updateSegmentedImage(segmentedImage, true);
-
+        BufferedImage segmentedImage;
+        
+        if(parallelMode){
+	        ParallelSegController segmentation = new ParallelSegController();
+	        segmentation.parallelSegInit(image, sa);
+	        sa.startTimer();
+	    
+	        segmentation.doSegmentation();
+	       
+	        sa.stopTimer();
+	        
+	        sa.updateTimer(-1);
+	        segmentedImage = segmentation.getSegmentedImage();
+	        sa.updateSegmentedImage(segmentedImage, true);
+        }
+        else{
+	        Segmentation segmentation = new Segmentation();
+	        segmentation.SegmentationInit(image, sa);
+	        sa.startTimer();
+	    
+	        segmentation.doSegmentation();
+	       
+	        sa.stopTimer();
+	        
+	        sa.updateTimer(-1);
+	        segmentedImage = segmentation.getSegmentedImage();
+	        sa.updateSegmentedImage(segmentedImage, true);
+        }
         // Write output
   
         File output = new File( outputImageStr + file_extension  + format);
@@ -288,6 +306,8 @@ public class SegmentImg extends JPanel {
         }
 
         System.out.println("Elapsed Time (ms): " +  Long.toString(elapsedTime));
+        if(parallelMode)
+        	System.out.println("Phase 1 Time (ms): " + codyCoriva);
 
         if(!displayOff){
             try{
@@ -303,5 +323,15 @@ public class SegmentImg extends JPanel {
             }
         }
     }
+
+
+
+	public static void setCodyCoriva(long codyCoriva) {
+		SegmentImg.codyCoriva = codyCoriva - time0 - timeSub;
+	}
+
+	public static long getCodyCoriva() {
+		return codyCoriva;
+	}
 }
 
