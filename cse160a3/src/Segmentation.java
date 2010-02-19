@@ -136,9 +136,11 @@ public class Segmentation {
 
             // (Updates the GUI after each phase. Slow, useful for visual debugging)
             // comment it out for parallel version
+            gui.freezeTimer();
             gui.updateTimer(pp);
             // comment it out for parallel version
-            gui.updateSegmentedImage(getSegmentedImage(), false); 
+            gui.updateSegmentedImage(getSegmentedImage(), false);
+            gui.unFreezeTimer();
         }
         
      // comment it out for parallel version
