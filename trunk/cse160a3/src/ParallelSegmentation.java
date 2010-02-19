@@ -196,33 +196,41 @@ public class ParallelSegmentation extends Thread {
 			bottom = (highHeight*width+i)*pixelWidth;
 			idxt = top/pixelWidth;
 			idxb = bottom/pixelWidth;
-			
+			if (labels[idxt] == 0){
+				continue;
+			}
 			//bottom left
-			if(i!=0 && Math.abs(imagePixels[top] - imagePixels[bottom-1]) < threshold){
+			if(i!=0 && labels[idxb-1] != 0 &&
+					Math.abs(imagePixels[top] - imagePixels[bottom-pixelWidth]) < threshold){
 				changeFrom = labels[idxt];
-				labels[labels[idxt]-1] = labels[idxb];
-				changeTo = labels[idxb];
+				labels[labels[idxt]-1] = labels[idxb-1];
+				changeTo = labels[idxb-1];
 				
 				//traverse thru labels that point to daddy and make them point to grandma
-				BenFraser(newHigh, changeFrom, changeTo);
+				if (changeFrom != changeTo)
+					BenFraser(newHigh, changeFrom, changeTo);
 			}
 			//bottom
-			if(Math.abs(imagePixels[top] - imagePixels[bottom]) < threshold){
+			if(labels[idxb] != 0 &&
+					Math.abs(imagePixels[top] - imagePixels[bottom]) < threshold){
 				changeFrom = labels[idxt];
 				labels[labels[idxt]-1] = labels[idxb];
 				changeTo = labels[idxb];
 				
 				//traverse thru labels that point to daddy and make them point to grandma
-				BenFraser(newHigh, changeFrom, changeTo);
+				if (changeFrom != changeTo)
+					BenFraser(newHigh, changeFrom, changeTo);
 			}
 			//bottom right
-			if(i!=width-1 && Math.abs(imagePixels[top] - imagePixels[bottom+1]) < threshold){
+			if(i!=width-1 && labels[idxb-1] != 0 &&
+					Math.abs(imagePixels[top] - imagePixels[bottom+pixelWidth]) < threshold){
 				changeFrom = labels[idxt];
-				labels[labels[idxt]-1] = labels[idxb];
-				changeTo = labels[idxb];
+				labels[labels[idxt]-1] = labels[idxb+1];
+				changeTo = labels[idxb+1];
 				
 				//traverse thru labels that point to daddy and make them point to grandma
-				BenFraser(newHigh, changeFrom, changeTo);
+				if (changeFrom != changeTo)
+					BenFraser(newHigh, changeFrom, changeTo);
 			}
 			
 		}
