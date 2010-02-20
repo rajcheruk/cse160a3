@@ -17,9 +17,11 @@ public class ParallelSegmentation extends Thread {
 	private int lowHeight;//where in the image this will start.
 	private int highHeight;//where in the image this will end.
 	private int pixelWidth;
+	private ParallelSegController Joker;
 
-	public ParallelSegmentation(int tid) {
+	public ParallelSegmentation(int tid, ParallelSegController Joker) {
 		super();
+		this.Joker = Joker;
 		this.tid = tid;
 	}
 
@@ -139,11 +141,8 @@ public class ParallelSegmentation extends Thread {
 
             System.out.println( "Phase " + (pp) + " done in thread" + tid);
 
-            // (Updates the GUI after each phase. Slow, useful for visual debugging)
-            // comment it out for parallel version
-            //gui.updateTimer(pp);
-            // comment it out for parallel version
-            //gui.updateSegmentedImage(getSegmentedImage(), false); 
+            //TODO: check if all threads are done with phase
+            //Joker.whyNotRaster(pp);
         }
         
         // comment it out for parallel version
