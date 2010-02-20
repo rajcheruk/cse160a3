@@ -62,7 +62,7 @@ public class ParallelSegController {
     	ParallelSegmentation.numThreads.set(numThreads);
     	ParallelSegmentation.threads = threads;
     	for (curNumThreads = 0; curNumThreads < numThreads; curNumThreads++){
-    		ParallelSegmentation cur = new ParallelSegmentation(curNumThreads);
+    		ParallelSegmentation cur = new ParallelSegmentation(curNumThreads, this);
     		cur.setLabels(labels);
     		cur.setImage(imagePixels);
     		cur.setWidth(width);
@@ -120,6 +120,15 @@ public class ParallelSegController {
 
         return segmentedImage;
     }
-
     
+    protected void whyNotRaster(int phase) {
+    	// (Updates the GUI after each phase. Slow, useful for visual debugging)
+        // comment it out for parallel version
+    	gui.freezeTimer();
+    	gui.updateTimer(phase);
+        // comment it out for parallel version
+        gui.updateSegmentedImage(getSegmentedImage(), false);
+        gui.unFreezeTimer();
+    }
+
 }
