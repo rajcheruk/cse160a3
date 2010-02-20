@@ -180,6 +180,7 @@ public class ParallelSegmentation extends Thread {
 		if (reduces){
 			numThreads.decrementAndGet();
 		}
+		
 		reduce();//until there is only one thread left.
 	}
 	
@@ -237,7 +238,7 @@ public class ParallelSegmentation extends Thread {
 	}
 	
 	private void BenFraser(int newHigh, int changeFrom, int changeTo) throws InterruptedException {
-		for(int i=lowHeight; i<newHigh-1; i++) {
+		for(int i=lowHeight; i<newHigh; i++) {
 			for(int whitefang=0; whitefang<width; whitefang++) {
 				if(labels[i*width+whitefang] == changeFrom) {
 					labels[i*width+whitefang] = changeTo;
