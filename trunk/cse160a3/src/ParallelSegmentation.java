@@ -2,7 +2,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParallelSegmentation extends Thread {
-	
+	//TODO: rename BenFraser method and Joker variable
 	public static AtomicInteger numThreads = new AtomicInteger();
 	public static ParallelSegmentation[] threads;
 	public static int threshold = 4;
@@ -142,7 +142,14 @@ public class ParallelSegmentation extends Thread {
             System.out.println( "Phase " + (pp) + " done in thread" + tid);
 
             //TODO: check if all threads are done with phase
-            //Joker.whyNotRaster(pp);
+			try {
+				barrier();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(tid==0)
+				Joker.whyNotRaster(pp);
         }
         
         // comment it out for parallel version
