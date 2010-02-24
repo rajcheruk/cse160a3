@@ -4,11 +4,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ParallelSegmentation extends Thread {
 	//TODO: rename BenFraser method and Joker variable
 	public static AtomicInteger numThreads = new AtomicInteger();
+	public static AtomicInteger threadsInPhase1 = new AtomicInteger();
 	public static ParallelSegmentation[] threads;
 	public static int threshold = 4;
+	public static int root = 0;
 	public static Semaphore arrival = new Semaphore(1);
 	public static Semaphore departure = new Semaphore(0);
 	public static int count = 0;
+	public static Semaphore arrivalP = new Semaphore(1);//for the partial barrier
+	public static Semaphore departureP = new Semaphore(0);//for the partial barrier
+	public static int countP = 0;//for the partial barrier
 	
 	private int tid;
 	private int[] labels;
@@ -18,6 +23,7 @@ public class ParallelSegmentation extends Thread {
 	private int highHeight;//where in the image this will end.
 	private int pixelWidth;
 	private ParallelSegController Joker;
+	private boolean changed;
 
 	public ParallelSegmentation(int tid, ParallelSegController Joker) {
 		super();
@@ -51,19 +57,24 @@ public class ParallelSegmentation extends Thread {
 	
 	@SuppressWarnings("static-access")
 	public void run() {
-		doSegmentation();
+		try {
+			doSegmentation();
+		} catch (InterruptedException e) {
+			System.err.print("Segmentation interrupted in thread ");
+			System.err.println(tid);
+			e.printStackTrace();
+		}
 		SegmentImg.setCodyCoriva(System.currentTimeMillis());
 		try {
 			reduce();
 		} catch (InterruptedException e) {
-			System.out.print("Reduction distrupted in thread ");
-			System.out.println(tid);
+			System.err.print("Reduction distrupted in thread ");
+			System.err.println(tid);
 			e.printStackTrace();
 		}
 	}
 	
-	public void doSegmentation(){
-
+	public void doSegmentation() throws InterruptedException{
         int pix[] = imagePixels;
         int maxN = Math.max(width, highHeight-lowHeight);
 
@@ -71,7 +82,9 @@ public class ParallelSegmentation extends Thread {
         System.out.print("Ok, " + (phases+1) + " phases scheduled for");
         System.out.println(" thread " + tid);
 
-        for (int pp = 0; pp <= phases; pp++) {
+        changed = true;
+        for (int pp = 0; pp <= phases && changed; pp++) {
+        	changed = false;//reset for the round.
 
             // pass one. Find neighbors with better labels.
             for (int i = highHeight - 1; i >= lowHeight; i--) {
@@ -83,40 +96,73 @@ public class ParallelSegmentation extends Thread {
                     	continue;
 
                     int ll = labels[idx]; // save previous label
+                    int max;
 
                     // pixels are stored as 3 ints in "pix" array. we just use the first of them. 
                     // Compare with each neighbor
                     if (i != highHeight - 1 && 
-                            Math.abs(pix[((i+1)*width + j)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i+1)*width + j]);
+                            Math.abs(pix[((i+1)*width + j)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i+1)*width + j]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != lowHeight && 
-                            Math.abs(pix[((i-1)*width + j)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i-1)*width + j]);
+                            Math.abs(pix[((i-1)*width + j)*pixelWidth] - pix[idx3]) < threshold){ 
+                        max = Math.max(labels[idx], labels[(i-1)*width + j]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != highHeight - 1 && j != width - 1 && 
-                            Math.abs(pix[((i+1)*width + j + 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i+1) * width + j + 1]);
+                            Math.abs(pix[((i+1)*width + j + 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i+1) * width + j + 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != lowHeight && j != width - 1 && 
-                            Math.abs(pix[((i-1) * width + j + 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i-1) * width + j + 1]);
+                            Math.abs(pix[((i-1) * width + j + 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i-1) * width + j + 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != highHeight - 1 && j != 0 && 
-                            Math.abs(pix[((i+1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i+1) * width + j - 1]);
+                            Math.abs(pix[((i+1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i+1) * width + j - 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != lowHeight && j != 0 && 
-                            Math.abs(pix[((i-1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i-1) * width + j - 1]);
+                            Math.abs(pix[((i-1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i-1) * width + j - 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (j != 0 && 
-                            Math.abs(pix[(i*width + j - 1)*pixelWidth] - pix[idx3]) < threshold)
-                        labels[idx] = Math.max(labels[idx], labels[i*width + j - 1]);
+                            Math.abs(pix[(i*width + j - 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[i*width + j - 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (j != width - 1 && 
-                            Math.abs(pix[(i*width + j + 1)*pixelWidth] - pix[idx3]) < threshold)
-                        labels[idx] = Math.max(labels[idx], labels[i*width + j + 1]);
+                            Math.abs(pix[(i*width + j + 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[i*width + j + 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     // if label assigned to this pixel during "follow the pointers" step is worse than label
                     // of one of its neighbors, then that means that we're converging to local maximum instead
@@ -140,17 +186,20 @@ public class ParallelSegmentation extends Thread {
             }
 
             System.out.println( "Phase " + (pp) + " done in thread" + tid);
-
-            //TODO: check if all threads are done with phase
-			try {
-				barrier();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if(tid==0)
+            
+			barrier(threadsInPhase1.get());
+			if(tid==root){
 				Joker.whyNotRaster(pp);
+				if (!changed)//will exit before next phase
+					for (int i = 0; i < numThreads.get(); i++)//find replacement
+						if (threads[i].changed){//if this thread will continue next phase
+							root = i;
+							break;
+						}
+			}
+			barrier(threadsInPhase1.get());
         }
+        threadsInPhase1.decrementAndGet();
         
         // comment it out for parallel version
         //gui.updateDoneLabel();
@@ -266,6 +315,26 @@ public class ParallelSegmentation extends Thread {
 			departure.release();
 		else
 			arrival.release();
+		return;
+	}
+	
+	/*
+	 * Parital barrier.  Waits for only waitFor threads to arrive,
+	 * not necessarily all of them.
+	 */
+	private void barrier(int waitFor) throws InterruptedException{
+		arrivalP.acquire();
+		countP++;
+		if (countP < waitFor)
+			arrivalP.release();
+		else
+			departureP.release();
+		departureP.acquire();
+		countP--;
+		if (countP > 0)
+			departureP.release();
+		else
+			arrivalP.release();
 		return;
 	}
 

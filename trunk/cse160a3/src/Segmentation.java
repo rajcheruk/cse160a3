@@ -64,8 +64,10 @@ public class Segmentation {
         int phases = (int) Math.ceil(Math.log(maxN) / Math.log(2)) + 1;
         System.out.println("Ok, " + (phases+1) + " phases scheduled...");
 
-        for (int pp = 0; pp <= phases; pp++) {
-
+        boolean changed = true;
+        int max;
+        for (int pp = 0; pp <= phases && changed; pp++) {
+        	changed = false;
             // pass one. Find neighbors with better labels.
             for (int i = height - 1; i >= 0; i--) {
                 for (int j = width - 1; j >= 0; j--) {
@@ -80,36 +82,68 @@ public class Segmentation {
                     // pixels are stored as 3 ints in "pix" array. we just use the first of them. 
                     // Compare with each neighbor
                     if (i != height - 1 && 
-                            Math.abs(pix[((i+1)*width + j)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i+1)*width + j]);
+                            Math.abs(pix[((i+1)*width + j)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i+1)*width + j]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != 0 && 
-                            Math.abs(pix[((i-1)*width + j)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i-1)*width + j]);
+                            Math.abs(pix[((i-1)*width + j)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i-1)*width + j]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != height - 1 && j != width - 1 && 
-                            Math.abs(pix[((i+1)*width + j + 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i+1) * width + j + 1]);
+                            Math.abs(pix[((i+1)*width + j + 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i+1) * width + j + 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != 0 && j != width - 1 && 
-                            Math.abs(pix[((i-1) * width + j + 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i-1) * width + j + 1]);
+                            Math.abs(pix[((i-1) * width + j + 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i-1) * width + j + 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != height - 1 && j != 0 && 
-                            Math.abs(pix[((i+1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i+1) * width + j - 1]);
+                            Math.abs(pix[((i+1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i+1) * width + j - 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (i != 0 && j != 0 && 
-                            Math.abs(pix[((i-1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold) 
-                        labels[idx] = Math.max(labels[idx], labels[(i-1) * width + j - 1]);
+                            Math.abs(pix[((i-1) * width + j - 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[(i-1) * width + j - 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (j != 0 && 
-                            Math.abs(pix[(i*width + j - 1)*pixelWidth] - pix[idx3]) < threshold)
-                        labels[idx] = Math.max(labels[idx], labels[i*width + j - 1]);
+                            Math.abs(pix[(i*width + j - 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[i*width + j - 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     if (j != width - 1 && 
-                            Math.abs(pix[(i*width + j + 1)*pixelWidth] - pix[idx3]) < threshold)
-                        labels[idx] = Math.max(labels[idx], labels[i*width + j + 1]);
+                            Math.abs(pix[(i*width + j + 1)*pixelWidth] - pix[idx3]) < threshold){
+                        max = Math.max(labels[idx], labels[i*width + j + 1]);
+                        if (max != labels[idx])
+                        	changed = true;
+                        labels[idx] = max;
+                    }
 
                     // if label assigned to this pixel during "follow the pointers" step is worse than label
                     // of one of its neighbors, then that means that we're converging to local maximum instead

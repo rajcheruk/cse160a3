@@ -60,6 +60,7 @@ public class ParallelSegController {
     
     public void doSegmentation(){
     	ParallelSegmentation.numThreads.set(numThreads);
+    	ParallelSegmentation.threadsInPhase1.set(numThreads);
     	ParallelSegmentation.threads = threads;
     	for (curNumThreads = 0; curNumThreads < numThreads; curNumThreads++){
     		ParallelSegmentation cur = new ParallelSegmentation(curNumThreads, this);
