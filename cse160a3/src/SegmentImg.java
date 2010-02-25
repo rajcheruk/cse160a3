@@ -15,7 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.util.Arrays;
 
-//TODO: rename codyCorvia methods and variable
+
 @SuppressWarnings("serial")
 public class SegmentImg extends JPanel {
     public static int THUMB_MAX_WIDTH = 400;

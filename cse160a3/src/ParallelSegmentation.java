@@ -2,7 +2,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParallelSegmentation extends Thread {
-	//TODO: rename BenFraser method and Joker variable
+	
 	public static AtomicInteger numThreads = new AtomicInteger();
 	public static AtomicInteger threadsInPhase1 = new AtomicInteger();
 	public static ParallelSegmentation[] threads;
@@ -318,7 +318,7 @@ public class ParallelSegmentation extends Thread {
 	}
 	
 	/*
-	 * Parital barrier.  Waits for only waitFor threads to arrive,
+	 * Partial barrier.  Waits for only waitFor threads to arrive,
 	 * not necessarily all of them.
 	 */
 	private void barrier(int waitFor) throws InterruptedException{
