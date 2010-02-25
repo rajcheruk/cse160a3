@@ -122,7 +122,7 @@ public class ParallelSegController {
         return segmentedImage;
     }
     
-    protected void whyNotRaster(int phase) {
+    protected void updateSegmentedImage(int phase) {
     	// (Updates the GUI after each phase. Slow, useful for visual debugging)
         // comment it out for parallel version
     	gui.freezeTimer();

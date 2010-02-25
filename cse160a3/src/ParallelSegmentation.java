@@ -22,12 +22,12 @@ public class ParallelSegmentation extends Thread {
 	private int lowHeight;//where in the image this will start.
 	private int highHeight;//where in the image this will end.
 	private int pixelWidth;
-	private ParallelSegController Joker;
+	private ParallelSegController gui;
 	private boolean changed;
 
-	public ParallelSegmentation(int tid, ParallelSegController Joker) {
+	public ParallelSegmentation(int tid, ParallelSegController gui) {
 		super();
-		this.Joker = Joker;
+		this.gui = gui;
 		this.tid = tid;
 	}
 
@@ -64,7 +64,7 @@ public class ParallelSegmentation extends Thread {
 			System.err.println(tid);
 			e.printStackTrace();
 		}
-		SegmentImg.setCodyCoriva(System.currentTimeMillis());
+		SegmentImg.setPart1Time(System.currentTimeMillis());
 		try {
 			reduce();
 		} catch (InterruptedException e) {
@@ -189,7 +189,7 @@ public class ParallelSegmentation extends Thread {
             
 			barrier(threadsInPhase1.get());
 			if(tid==root){
-				Joker.whyNotRaster(pp);
+				gui.updateSegmentedImage(pp);
 				if (!changed)//will exit before next phase
 					for (int i = 0; i < numThreads.get(); i++)//find replacement
 						if (threads[i].changed){//if this thread will continue next phase
@@ -243,7 +243,6 @@ public class ParallelSegmentation extends Thread {
 	 * Reduce this threads portion of the image.
 	 */
 	private void reducePhase(int newHigh) throws InterruptedException{
-		//TODO: ....................
 		int top, bottom, idxt, idxb;
 		int changeFrom, changeTo;
 		
@@ -264,7 +263,7 @@ public class ParallelSegmentation extends Thread {
 				
 				//traverse thru labels that point to daddy and make them point to grandma
 				if (changeFrom != changeTo)
-					BenFraser(newHigh, changeFrom, changeTo);
+					updateLabels(newHigh, changeFrom, changeTo);
 			}
 			//bottom
 			if(labels[idxb] != 0 &&
@@ -275,7 +274,7 @@ public class ParallelSegmentation extends Thread {
 				
 				//traverse thru labels that point to daddy and make them point to grandma
 				if (changeFrom != changeTo)
-					BenFraser(newHigh, changeFrom, changeTo);
+					updateLabels(newHigh, changeFrom, changeTo);
 			}
 			//bottom right
 			if(i!=width-1 && labels[idxb-1] != 0 &&
@@ -286,13 +285,13 @@ public class ParallelSegmentation extends Thread {
 				
 				//traverse thru labels that point to daddy and make them point to grandma
 				if (changeFrom != changeTo)
-					BenFraser(newHigh, changeFrom, changeTo);
+					updateLabels(newHigh, changeFrom, changeTo);
 			}
 			
 		}
 	}
 	
-	private void BenFraser(int newHigh, int changeFrom, int changeTo) throws InterruptedException {
+	private void updateLabels(int newHigh, int changeFrom, int changeTo) throws InterruptedException {
 		for(int i=lowHeight; i<newHigh; i++) {
 			for(int whitefang=0; whitefang<width; whitefang++) {
 				if(labels[i*width+whitefang] == changeFrom) {

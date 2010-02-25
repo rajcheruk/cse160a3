@@ -52,7 +52,7 @@ public class SegmentImg extends JPanel {
     private static long elapsedTime;
 
     //BENFRASER RULE
-    private static volatile long codyCoriva;
+    private static volatile long part1Time;
     
     public SegmentImg(BufferedImage image) {
 
@@ -196,6 +196,7 @@ public class SegmentImg extends JPanel {
 	                Usage();
 	            }
 	            Segmentation.threshold = threshold;
+	            ParallelSegmentation.threshold = threshold;
 	        }
 	        else if (arg.equals("-h")) {
 	           hold = true;
@@ -307,7 +308,7 @@ public class SegmentImg extends JPanel {
 
         System.out.println("Elapsed Time (ms): " +  Long.toString(elapsedTime));
         if(parallelMode)
-        	System.out.println("Phase 1 Time (ms): " + codyCoriva);
+        	System.out.println("Part 1 Time (ms): " + part1Time);
 
         if(!displayOff){
             try{
@@ -324,14 +325,14 @@ public class SegmentImg extends JPanel {
         }
     }
 
-
-
-	public static void setCodyCoriva(long codyCoriva) {
-		SegmentImg.codyCoriva = codyCoriva - time0 - timeSub;
+	public static long getPart1Time() {
+		return part1Time;
 	}
 
-	public static long getCodyCoriva() {
-		return codyCoriva;
+
+
+	public static void setPart1Time(long part1Time) {
+		SegmentImg.part1Time = part1Time - time0 - timeSub;
 	}
 }
 
